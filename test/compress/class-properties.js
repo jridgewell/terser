@@ -390,3 +390,153 @@ private_properties_can_be_mangled: {
         new X().log()
     }
 }
+
+private_properties_can_be_mangled_nested: {
+    no_mozilla_ast = true;
+    node_version = ">=12"
+    mangle = {
+        properties: true
+    }
+    input: {
+        class X {
+            aaaaaa = "P"
+            #aaaaaa = "A"
+            #bbbbbb() {
+                return "SS"
+            }
+            get #cccccc() {}
+            set #dddddd(v) {}
+            log() {
+                class Nested {
+                    #aaaaaa = "A"
+                    #bbbbbb() {
+                        return "SS"
+                    }
+                    get #cccccc() {}
+                    set #dddddd(v) {}
+                    #eeeeee = "A"
+                    #ffffff() {
+                        return "SS"
+                    }
+                    get #gggggg() {}
+                    set #hhhhhh(v) {}
+                    log() {
+                        console.log(this.#aaaaaa + this.#bbbbbb() + this.#cccccc + this.#dddddd)
+                        console.log(this.#eeeeee + this.#ffffff() + this.#gggggg + this.#hhhhhh)
+                    }
+                }
+                console.log(this.aaaaaa + this.#aaaaaa + this.#bbbbbb() + this.#cccccc + this.#dddddd)
+            }
+        }
+
+        new X().log()
+    }
+    expect: {
+        class X {
+            t = "P";
+            #s = "A";
+            #t() {
+                return "SS";
+            }
+            get #a() {}
+            set #e(s) {}
+            log() {
+                class s {
+                    #s = "A";
+                    #t() {
+                        return "SS";
+                    }
+                    get #a() {}
+                    set #e(s) {}
+                    #h = "A";
+                    #c() {
+                        return "SS";
+                    }
+                    get #i() {}
+                    set #b(s) {}
+                    log() {
+                        console.log(this.#s + this.#t() + this.#a + this.#e);
+                        console.log(this.#h + this.#c() + this.#i + this.#b);
+                    }
+                }
+                console.log(this.t + this.#s + this.#t() + this.#a + this.#e);
+            }
+        }
+        new X().log();
+    }
+}
+
+private_properties_can_be_mangled_sibling: {
+    no_mozilla_ast = true;
+    node_version = ">=12"
+    mangle = {
+        properties: true
+    }
+    input: {
+        class X {
+            aaaaaa = "P"
+            #aaaaaa = "A"
+            #bbbbbb() {
+                return "SS"
+            }
+            get #cccccc() {}
+            set #dddddd(v) {}
+            log() {
+                console.log(this.aaaaaa + this.#aaaaaa + this.#bbbbbb() + this.#cccccc + this.#dddddd)
+            }
+        }
+        class Sibling {
+            #aaaaaa = "A"
+            #bbbbbb() {
+                return "SS"
+            }
+            get #cccccc() {}
+            set #dddddd(v) {}
+            #eeeeee = "A"
+            #ffffff() {
+                return "SS"
+            }
+            get #gggggg() {}
+            set #hhhhhh(v) {}
+            log() {
+                console.log(this.#aaaaaa + this.#bbbbbb() + this.#cccccc + this.#dddddd)
+                console.log(this.#eeeeee + this.#ffffff() + this.#gggggg + this.#hhhhhh)
+            }
+        }
+
+        new X().log()
+    }
+    expect: {
+        class X {
+            t = "P";
+            #s = "A";
+            #t() {
+                return "SS";
+            }
+            get #a() {}
+            set #e(s) {}
+            log() {
+                console.log(this.t + this.#s + this.#t() + this.#a + this.#e);
+            }
+        }
+        class Sibling {
+            #s = "A";
+            #t() {
+                return "SS";
+            }
+            get #a() {}
+            set #e(s) {}
+            #h = "A";
+            #c() {
+                return "SS";
+            }
+            get #i() {}
+            set #b(s) {}
+            log() {
+                console.log(this.#s + this.#t() + this.#a + this.#e);
+                console.log(this.#h + this.#c() + this.#i + this.#b);
+            }
+        }
+        new X().log();
+    }
+}
